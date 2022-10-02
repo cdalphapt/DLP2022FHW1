@@ -26,6 +26,7 @@ class pdfPaper:
             self.contentTxt += page.extract_text()
         if debug == 1:
             print(self.contentTxt)
+        self.FindRefs()
 
     def FindRefs(self):
         tempLowercTxt = self.contentTxt.lower()
@@ -43,14 +44,20 @@ class pdfPaper:
                 tempRef = tempRef.strip()
                 self.refs.append(tempRef)
 
+
     def DownloadAllPapers(self):
         for ref in self.refs:
             SearchForPaper(ref)
 
     def ShowRefs(self):
+        refsStr = ''
         for ref in self.refs:
-            print('--------------------------------------------------------------------------')
-            print(ref)
+            refsStr += '---------------------------------------------\n'
+            refsStr += ref + '\n';
+            if debug == 1:
+                print(refsStr)
+        return refsStr
+
 
             
 
@@ -78,6 +85,9 @@ def FormatCorrection(oriStr):
 
 def SearchForPaper(paperName):
     #1:Segment name by dot
+    logStr = ''
+    logStr += '---------------------------------------\n'
+    logStr += "Downloading:\n" + paperName + '\n'
     print('--------------------------------------------------------------------------')
     print("Downloading:\n" + paperName)
     tempNamePool = []
@@ -96,6 +106,7 @@ def SearchForPaper(paperName):
     tempNamePool = tempNamePool[-1::-1]
     if debug == 1:
         print(tempNamePool)
+    #2:Try to find paper
     IsFindPaper = 0
     for segName in tempNamePool:
         #http = urllib3.PoolManager()
@@ -107,6 +118,7 @@ def SearchForPaper(paperName):
         result = bs.find('p', id = 'completesearch-info-matches').get_text()
         if debug == 1:
             print(result)
+        #if there are matches and the number is no more than 5
         if not foundStr.__contains__(result):
             continue
         else:
@@ -161,15 +173,18 @@ def SearchForPaper(paperName):
                         break
             bibDownloadLink = subBibTeXStr[linkS:linkE-1:1]
             bib = requests.get(bibDownloadLink)
-            f = open('./download/' + str(time.time()) + '.bib', 'wb')
+            tempFileName = './download/' + str(time.time()) + '.bib'
+            f = open(tempFileName, 'wb')
             f.write(bib.content)
             f.close()
-            print("Download Success")
+            logStr += "Download Success: " + tempFileName + '\n'
+            print("Download Success: " + tempFileName)
             IsFindPaper = 1
-            return 1;
+            return logStr
     if IsFindPaper == 0:
-        print("Paper not Found")
-        return 0;
+        print("Paper not Found or too many matches.")
+        logStr += "Paper not Found or too many matches.\n"
+        return logStr;
 
 
             #bibPos = nav.

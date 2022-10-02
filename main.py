@@ -1,5 +1,6 @@
 from getopt import getopt
 import utils
+import GUI
 import urllib.request
 import re
 import os
@@ -12,10 +13,11 @@ for op, value in opts:
         debug = 1;
 
 if __name__ == '__main__':
-    originPaper = utils.pdfPaper('./1904.05939.pdf')
-    originPaper.FindRefs()
-    originPaper.ShowRefs()
-    originPaper.DownloadAllPapers()
+    winUI = GUI.InitWindow()
+    #originPaper = utils.pdfPaper('./1904.05939.pdf')
+    #originPaper.FindRefs()
+    #originPaper.ShowRefs()
+    #originPaper.DownloadAllPapers()
 
 
 
