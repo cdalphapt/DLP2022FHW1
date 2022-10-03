@@ -1,15 +1,12 @@
-from base64 import encode
 import os
-from urllib import request
 import PyPDF2
-import string
 import re
-import urllib3
 import requests
 from bs4 import BeautifulSoup
 import time
 from main import debug      
 
+#valid match: 1-5
 foundStr = ['found one match','found 2 matches', 'found 3 matches', 'found 4 matches', 'found 5 matches']
 
 
@@ -31,7 +28,8 @@ class pdfPaper:
     def FindRefs(self):
         tempLowercTxt = self.contentTxt.lower()
         tempRefContainer = [subStr.start() for subStr in re.finditer('references', tempLowercTxt)]
-        tempAllRefs = self.contentTxt[tempRefContainer[-1]::1]#Find last "references"
+        #Find last "references"
+        tempAllRefs = self.contentTxt[tempRefContainer[-1]::1]
         tempAllRefs = FormatCorrection(tempAllRefs)
         tempRefContainer = [subStr.start() for subStr in re.finditer('\[[0-9]+\]', tempAllRefs)]
         for i in range(len(tempRefContainer)):
@@ -69,7 +67,6 @@ def FormatCorrection(oriStr):
     #correct the format for later process
     tempPosList = [subStr.start() for subStr in re.finditer(r'-\n[a-z]', oriStr)]
     #Clear hyphen, but keep en-dash unchanged (hpoefully)
-    #print(connectPosList)
     tempPosList = tempPosList[-1::-1]
     for subStrIndex in tempPosList:#del should start from tail
         oriStr = oriStr[0:subStrIndex:1] + oriStr[subStrIndex+2::1]
@@ -77,9 +74,7 @@ def FormatCorrection(oriStr):
     tempPosList = tempPosList[-1::-1]
     for subStrIndex in tempPosList:#del should start from tail
         oriStr = oriStr[0:subStrIndex+1:1] + oriStr[subStrIndex+2::1]
-    #print(oriStr)
     oriStr = oriStr.replace('\n', ' ')
-    #print(oriStr)
     return oriStr
 
 
@@ -108,11 +103,7 @@ def SearchForPaper(paperName):
         print(tempNamePool)
     #2:Try to find paper
     IsFindPaper = 0
-    for segName in tempNamePool:
-        #http = urllib3.PoolManager()
-        #response = http.request('GET', 'https://dblp.org/search?q=' + segName)
-        ##print(response.status,response.data.decode('utf-8'))
-        #data = response.data.decode('utf-8')
+    for segName in tempNamePool:#Split name for better search result
         url = 'https://dblp.org/search?q=' + segName
         bs = BeautifulSoup(requests.get(url).content, "lxml")
         result = bs.find('p', id = 'completesearch-info-matches').get_text()
@@ -125,6 +116,7 @@ def SearchForPaper(paperName):
             ul_1 = bs.find('ul', class_ = 'publ-list')
             nav = ul_1.find('nav', class_ = 'publ')
             navTxt = str(nav)
+
             #find BibTex
             texPos = navTxt.find("BibTeX")
             closeAStart,closeAEnd = len(navTxt),len(navTxt)
@@ -148,6 +140,7 @@ def SearchForPaper(paperName):
                         linkE = i
                         break
             herfLink = subBibTeXStr[linkS:linkE-1:1]
+
             #find bib download link
             bibWeb = str(BeautifulSoup(requests.get(herfLink).content, "lxml"))
             texPos = str(bibWeb).find("download as .bib file")
@@ -173,6 +166,8 @@ def SearchForPaper(paperName):
                         break
             bibDownloadLink = subBibTeXStr[linkS:linkE-1:1]
             bib = requests.get(bibDownloadLink)
+
+            #Create bib file
             if not os.path.isdir('./download/'):
                 os.makedirs('./download/')
             tempFileName = './download/' + str(time.time()) + '.bib'
@@ -189,13 +184,3 @@ def SearchForPaper(paperName):
         return logStr;
 
 
-            #bibPos = nav.
-
-            #print(bibPos)
-        #Find the only paper suitable
-        
-
-        #searched = bs.find(class_ = "publ-list")
-        #ul = searched.find('ul')
-        #print(ul)
-        #print(response.data.decode('utf-8'))
