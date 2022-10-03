@@ -28,7 +28,7 @@
   <ItemGroup>
     <Compile Include="GUI.py" />
     <Compile Include="main.py" />
-    <Compile Include="temp.py" />
+    <Compile Include="mainUI.py" />
     <Compile Include="utils.py" />
   </ItemGroup>
   <ItemGroup>

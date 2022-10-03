@@ -173,6 +173,8 @@ def SearchForPaper(paperName):
                         break
             bibDownloadLink = subBibTeXStr[linkS:linkE-1:1]
             bib = requests.get(bibDownloadLink)
+            if not os.path.isdir('./download/'):
+                os.makedirs('./download/')
             tempFileName = './download/' + str(time.time()) + '.bib'
             f = open(tempFileName, 'wb')
             f.write(bib.content)
